@@ -16,8 +16,11 @@ all: $(EXECUTABLE)
 run: all
 	./$(EXECUTABLE)
 
-$(EXECUTABLE): $(OBJECTS)
+$(EXECUTABLE): $(OBJ_FOLDER) $(OBJECTS)
 	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $(EXECUTABLE) $(LIBS)
+
+$(OBJ_FOLDER):
+	mkdir $(OBJ_FOLDER)
 
 $(OBJ_FOLDER)/main.o: $(SRC_FOLDER)/main.cpp
 	$(CXX) $(CXXFLAGS) -c $(SRC_FOLDER)/main.cpp -o $(OBJ_FOLDER)/main.o
