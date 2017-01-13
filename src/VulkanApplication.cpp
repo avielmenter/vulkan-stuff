@@ -4,7 +4,7 @@
 
 constexpr const std::array<const char *, 1> VALIDATION_LAYERS =
 {
-	"VK_LAYER_LUNARG_standard_validation"
+	"" //"VK_LAYER_LUNARG_standard_validation"
 };
 
 void VulkanApplication::enableValidationLayers(VkInstanceCreateInfo &createInfo)
@@ -19,6 +19,7 @@ void VulkanApplication::enableValidationLayers(VkInstanceCreateInfo &createInfo)
 	std::vector<const char *> layersNotFound;
 	for (const char *requestedLayer : VALIDATION_LAYERS)
 	{
+		if (requestedLayer[0] == '\0') continue;
 		bool layerFound = false;
 
 		for (const auto &availableLayer : availableLayers)
@@ -49,11 +50,20 @@ void VulkanApplication::enableValidationLayers(VkInstanceCreateInfo &createInfo)
 		throw std::runtime_error("Validation layer requested but not found.");
 	}
 
-	if (layerCount > 0)
-	{
-		createInfo.enabledLayerCount = VALIDATION_LAYERS.size();
-		createInfo.ppEnabledLayerNames = VALIDATION_LAYERS.data();
-	}
+	if (layerCount == 0)
+		return;
+
+	createInfo.enabledLayerCount = VALIDATION_LAYERS.size();
+	createInfo.ppEnabledLayerNames = VALIDATION_LAYERS.data();
+	
+	VkDebugReportCallbackCreateInfoEXT debugCreateInfo;
+	debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
+	debugCreateInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
+	debugCreateInfo.pfnCallback = validationCallback;
+	
+	if (createDebugReportCallback(this->instance, &debugCreateInfo, nullptr, this->callback.replace()) != VK_SUCCESS)
+		throw std::runtime_error("Failed to set up debug callback.");
+
 	#endif
 }
 
@@ -113,6 +123,22 @@ void VulkanApplication::initWindow()
 void VulkanApplication::initVulkan()
 {
 	this->createInstance();
+}
+
+void VulkanApplication::pickPhysicalDevice()
+{
+	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+
+	uint32_t deviceCount = 0;
+	vkEnumeratePhysicalDevices(this->instance, &deviceCount, nullptr);
+
+	if (deviceCount == 0)
+		throw std::runtime_error("No physical devices with Vulkan support found.");
+
+	std::vector<VkPhysicalDevice> devices(deviceCount);
+	vkEnumeratePhysicalDevices(this->instance, &deviceCount, devices.data());
+
+	//TODO: queue families 		
 }
 
 void VulkanApplication::run()
