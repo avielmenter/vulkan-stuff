@@ -52,6 +52,16 @@ class VkDeleter
 			this->cleanup();
 		}
 
+		T &get()
+		{
+			return this->object;
+		}
+
+		const T &get() const
+		{
+			return this->object;
+		}
+
 		const T *operator &() const
 		{
 			&object;

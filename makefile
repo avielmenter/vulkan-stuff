@@ -1,5 +1,5 @@
 CXX=g++
-CXXFLAGS=-std=gnu++14 -I$(VULKAN_SDK)/include
+CXXFLAGS=-std=gnu++14 -I$(VULKAN_SDK)/include -ggdb
 
 LIBS = -L$(VULKAN_SDK)/lib `pkg-config --static --libs glfw3` -lvulkan
 DEFS = -DDEBUG
@@ -9,7 +9,7 @@ EXECUTABLE=vk
 OBJ_FOLDER=obj
 SRC_FOLDER=src
 
-OBJECTS=$(OBJ_FOLDER)/main.o $(OBJ_FOLDER)/VulkanApplication.o
+OBJECTS=$(OBJ_FOLDER)/main.o $(OBJ_FOLDER)/VulkanApplication.o $(OBJ_FOLDER)/Device.o
 
 all: $(EXECUTABLE)
 
@@ -27,6 +27,9 @@ $(OBJ_FOLDER)/main.o: $(SRC_FOLDER)/main.cpp
 
 $(OBJ_FOLDER)/VulkanApplication.o: $(SRC_FOLDER)/VulkanApplication.cpp $(SRC_FOLDER)/VulkanApplication.h $(SRC_FOLDER)/vk/VkDeleter.h
 	$(CXX) $(CXXFLAGS) $(DEFS) -c $(SRC_FOLDER)/VulkanApplication.cpp -o $(OBJ_FOLDER)/VulkanApplication.o
+
+$(OBJ_FOLDER)/Device.o: $(SRC_FOLDER)/vk/Device.cpp $(SRC_FOLDER)/vk/Device.h $(SRC_FOLDER)/vk/VkDeleter.h
+	$(CXX) $(CXXFLAGS) $(DEFS) -c $(SRC_FOLDER)/vk/Device.cpp -o $(OBJ_FOLDER)/Device.o
 
 clean:
 	rm -rf $(EXECUTABLE) $(OBJECTS)

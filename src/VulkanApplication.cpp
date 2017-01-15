@@ -125,7 +125,7 @@ void VulkanApplication::initVulkan()
 	this->createInstance();
 }
 
-void VulkanApplication::pickPhysicalDevice()
+void VulkanApplication::findPhysicalDevices()
 {
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 
@@ -135,16 +135,36 @@ void VulkanApplication::pickPhysicalDevice()
 	if (deviceCount == 0)
 		throw std::runtime_error("No physical devices with Vulkan support found.");
 
-	std::vector<VkPhysicalDevice> devices(deviceCount);
-	vkEnumeratePhysicalDevices(this->instance, &deviceCount, devices.data());
+	this->devices.clear();
+	std::vector<VkPhysicalDevice> vkDevices(deviceCount);
+	vkEnumeratePhysicalDevices(this->instance, &deviceCount, vkDevices.data());
+	
+	for (const auto &vkDevice : vkDevices)
+		this->devices.push_back(Device(vkDevice));
 
-	//TODO: queue families 		
+	#ifdef DEBUG
+	std::cout << this->devices.size() << " available devices." << std::endl;
+	#endif
+}
+
+void VulkanApplication::pickPhysicalDevice()
+{
+	if (this->devices.empty())
+		this->findPhysicalDevices();
+	
+	this->currentDevice = &this->devices[0];
+	for (auto &dev : this->devices)
+		if (dev.deviceRank() > this->currentDevice->deviceRank())
+			this->currentDevice = &dev;
+
+	this->currentDevice->createLogicalDevice();
 }
 
 void VulkanApplication::run()
 {
 	this->initWindow();
 	this->initVulkan();
+	this->pickPhysicalDevice();
 
 	this->mainLoop();
 }

@@ -8,7 +8,7 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "vk/VkDeleter.h"
+#include "vk/Device.h"
 
 #ifdef DEBUG
 VkResult createDebugReportCallback(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugReportCallbackEXT *pCallback)
@@ -41,13 +41,17 @@ class VulkanApplication
 		VkDeleter<VkInstance> instance {vkDestroyInstance};
 
 		std::vector<VkExtensionProperties> extensions;
-	
+		std::vector<Device> devices;
+
+		Device *currentDevice = nullptr;
+
 		#ifdef DEBUG
 		VkDeleter<VkDebugReportCallbackEXT> callback{instance, destroyDebugReportCallback};
 		void enableValidationLayers(VkInstanceCreateInfo &createInfo);
 		#endif
 	
 		void createInstance();
+		void findPhysicalDevices();
 
 		void initWindow();
 		void initVulkan();
