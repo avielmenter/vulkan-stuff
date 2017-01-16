@@ -2,6 +2,9 @@
 #define _DEVICE_H_
 
 #include "VkDeleter.h"
+
+#include <set>
+#include <array>
 #include <vector>
 
 class Device
@@ -11,15 +14,17 @@ class Device
 		VkPhysicalDeviceProperties properties;
 		VkPhysicalDeviceFeatures features;
 
-		VkQueue queue;
+		bool sameGraphicsAndPresentQueue = false;
+
+		VkQueue graphicsQueue;
+		VkQueue presentQueue;
 		VkDeleter<VkDevice> device {vkDestroyDevice};
 
-		bool isQueueSuitable(const VkQueueFamilyProperties &queue);
 
 	public:
 		Device(const VkPhysicalDevice &setDevice);
 		
-		void createLogicalDevice();
+		void createLogicalDevice(const VkSurfaceKHR &surface);
 
 		bool isDeviceSuitable() const;
 		int deviceRank() const;
@@ -30,8 +35,11 @@ class Device
 		VkDevice &getVkDevice();
 		const VkDevice &getVkDevice() const;
 
-		VkQueue &getQueue();
-		const VkQueue &getQueue() const;
+		VkQueue &getGraphicsQueue();
+		const VkQueue &getGraphicsQueue() const;
+
+		VkQueue &getPresentQueue();
+		const VkQueue &getPresentQueue() const;
 
 		static constexpr int DEVICE_TYPE_SCORE = 1000;
 };

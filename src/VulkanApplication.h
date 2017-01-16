@@ -39,6 +39,7 @@ class VulkanApplication
 	private:
 		GLFWwindow *window;
 		VkDeleter<VkInstance> instance {vkDestroyInstance};
+		VkDeleter<VkSurfaceKHR> surface {this->instance, vkDestroySurfaceKHR};
 
 		std::vector<VkExtensionProperties> extensions;
 		std::vector<Device> devices;
@@ -55,6 +56,7 @@ class VulkanApplication
 
 		void initWindow();
 		void initVulkan();
+		void createSurface();
 		void pickPhysicalDevice();
 		void mainLoop();
 

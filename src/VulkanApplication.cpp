@@ -7,9 +7,9 @@ constexpr const std::array<const char *, 1> VALIDATION_LAYERS =
 	"" //"VK_LAYER_LUNARG_standard_validation"
 };
 
+#ifdef DEBUG
 void VulkanApplication::enableValidationLayers(VkInstanceCreateInfo &createInfo)
 {
-	#ifdef DEBUG
 	uint32_t layerCount;
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -63,9 +63,8 @@ void VulkanApplication::enableValidationLayers(VkInstanceCreateInfo &createInfo)
 	
 	if (createDebugReportCallback(this->instance, &debugCreateInfo, nullptr, this->callback.replace()) != VK_SUCCESS)
 		throw std::runtime_error("Failed to set up debug callback.");
-
-	#endif
 }
+#endif
 
 void VulkanApplication::createInstance()
 {
@@ -88,7 +87,9 @@ void VulkanApplication::createInstance()
 	createInfo.enabledExtensionCount = glfwExtensionCount;
 	createInfo.ppEnabledExtensionNames = glfwExtensions;
 	createInfo.enabledLayerCount = 0;
+	#ifdef DEBUG
 	this->enableValidationLayers(createInfo);
+	#endif
 
 	VkResult result = vkCreateInstance(&createInfo, nullptr, this->instance.replace());
 
@@ -125,6 +126,12 @@ void VulkanApplication::initVulkan()
 	this->createInstance();
 }
 
+void VulkanApplication::createSurface()
+{
+	if (glfwCreateWindowSurface(this->instance, this->window, nullptr, this->surface.replace()) != VK_SUCCESS)
+		throw std::runtime_error("Failed to create window surface.");
+}
+
 void VulkanApplication::findPhysicalDevices()
 {
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -157,13 +164,14 @@ void VulkanApplication::pickPhysicalDevice()
 		if (dev.deviceRank() > this->currentDevice->deviceRank())
 			this->currentDevice = &dev;
 
-	this->currentDevice->createLogicalDevice();
+	this->currentDevice->createLogicalDevice(this->surface.get());
 }
 
 void VulkanApplication::run()
 {
 	this->initWindow();
 	this->initVulkan();
+	this->createSurface();
 	this->pickPhysicalDevice();
 
 	this->mainLoop();
