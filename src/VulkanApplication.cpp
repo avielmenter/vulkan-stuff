@@ -4,7 +4,7 @@
 
 constexpr const std::array<const char *, 1> VALIDATION_LAYERS =
 {
-	"" //"VK_LAYER_LUNARG_standard_validation"
+	""//	"VK_LAYER_LUNARG_standard_validation"
 };
 
 VulkanApplication::~VulkanApplication()
