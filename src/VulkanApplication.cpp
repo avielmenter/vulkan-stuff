@@ -7,6 +7,12 @@ constexpr const std::array<const char *, 1> VALIDATION_LAYERS =
 	"" //"VK_LAYER_LUNARG_standard_validation"
 };
 
+VulkanApplication::~VulkanApplication()
+{
+	if (this->currentSwapChain != nullptr && this->currentDevice != nullptr)
+		delete this->currentSwapChain;
+}
+
 #ifdef DEBUG
 void VulkanApplication::enableValidationLayers(VkInstanceCreateInfo &createInfo)
 {
@@ -159,12 +165,18 @@ void VulkanApplication::pickPhysicalDevice()
 	if (this->devices.empty())
 		this->findPhysicalDevices();
 	
-	this->currentDevice = &this->devices[0];
+	this->currentDevice = std::unique_ptr<Device>(&this->devices[0]);
 	for (auto &dev : this->devices)
 		if (dev.deviceRank() > this->currentDevice->deviceRank())
-			this->currentDevice = &dev;
+			this->currentDevice = std::unique_ptr<Device>(&dev);
 
 	this->currentDevice->createLogicalDevice(this->surface.get());
+}
+
+void VulkanApplication::createSwapChain()
+{
+	this->currentSwapChain = new SwapChain(*this->currentDevice, this->surface);
+	this->currentSwapChain->createSwapChain(1920, 1080);
 }
 
 void VulkanApplication::run()
@@ -173,6 +185,7 @@ void VulkanApplication::run()
 	this->initVulkan();
 	this->createSurface();
 	this->pickPhysicalDevice();
+	this->createSwapChain();
 
 	this->mainLoop();
 }

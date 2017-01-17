@@ -21,28 +21,26 @@ void Device::createLogicalDevice(const VkSurfaceKHR &surface)
 	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
 	vkGetPhysicalDeviceQueueFamilyProperties(this->physicalDevice, &queueFamilyCount, queueFamilies.data());	
 
-	int graphicsQueueFamily = -1;
-	int presentQueueFamily = -1;
 	int i = 0;
 
 	for (const auto &queueFamily : queueFamilies)
 	{
 		if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-			graphicsQueueFamily = i;
+			this->graphicsQueueFamily = i;
 		
 		VkBool32 presentSupport = false;
 		vkGetPhysicalDeviceSurfaceSupportKHR(this->physicalDevice, i, surface, &presentSupport); 
 		if (queueFamily.queueCount > 0 && presentSupport)
-			presentQueueFamily = i;
+			this->presentQueueFamily = i;
 
 		i++;
 	}
 
-	if (graphicsQueueFamily == -1 || presentQueueFamily == -1)
+	if (this->graphicsQueueFamily == -1 || this->presentQueueFamily == -1)
 		throw std::runtime_error("Failed to find suitable graphics or presentation queues.");
 	
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-	std::set<int> uniqueQueueFamilies = { graphicsQueueFamily, presentQueueFamily };
+	std::set<int> uniqueQueueFamilies = { this->graphicsQueueFamily, this->presentQueueFamily };
 
 	for (int queueFamily : uniqueQueueFamilies)
 	{
@@ -70,11 +68,9 @@ void Device::createLogicalDevice(const VkSurfaceKHR &surface)
 	if (vkCreateDevice(this->physicalDevice, &deviceCreateInfo, nullptr, this->device.replace()) != VK_SUCCESS)
 		throw std::runtime_error("Failed to create logical device.");
 
-	vkGetDeviceQueue(this->device.get(), graphicsQueueFamily, 0, &this->graphicsQueue);	
-	if (graphicsQueueFamily != presentQueueFamily)
+	vkGetDeviceQueue(this->device.get(), this->graphicsQueueFamily, 0, &this->graphicsQueue);	
+	if (this->graphicsQueueFamily != this->presentQueueFamily)
 		vkGetDeviceQueue(this->device.get(), presentQueueFamily, 0, &this->presentQueue);
-
-	this->sameGraphicsAndPresentQueue = graphicsQueueFamily == presentQueueFamily;
 }
 
 bool Device::isDeviceSuitable() const
@@ -151,14 +147,44 @@ const VkQueue &Device::getGraphicsQueue() const
 
 VkQueue &Device::getPresentQueue()
 {
-	if (!this->sameGraphicsAndPresentQueue)
+	if (this->presentQueueFamily != this->graphicsQueueFamily)
 		return this->presentQueue;
 	return this->graphicsQueue;
 }
 
 const VkQueue &Device::getPresentQueue() const
 {
-	if (!this->sameGraphicsAndPresentQueue)
+	if (this->presentQueueFamily != this->graphicsQueueFamily)
 		return this->presentQueue;
 	return this->graphicsQueue;
+}
+
+void Device::setUpSwapChainQueueFamilies(VkSwapchainCreateInfoKHR &createInfo) const
+{
+	if (this->graphicsQueueFamily == this->presentQueueFamily)
+	{
+		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		createInfo.queueFamilyIndexCount = 0;
+		createInfo.pQueueFamilyIndices = nullptr;
+	}
+	else
+	{
+		uint32_t *familyIndices = new uint32_t[2];
+		familyIndices[0] = this->graphicsQueueFamily;
+		familyIndices[1] = this->presentQueueFamily;
+
+		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+		createInfo.queueFamilyIndexCount = 2;
+		createInfo.pQueueFamilyIndices = familyIndices;
+	}
+}
+
+bool Device::hasSwapChainSupport(const VkSurfaceKHR &surface) const
+{	
+	uint32_t formatCount = 0, presentModeCount = 0;
+
+	vkGetPhysicalDeviceSurfaceFormatsKHR(this->physicalDevice, surface, &formatCount, nullptr);
+	vkGetPhysicalDeviceSurfacePresentModesKHR(this->physicalDevice, surface, &presentModeCount, nullptr);
+
+	return formatCount > 0 && presentModeCount > 0;
 }

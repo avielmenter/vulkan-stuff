@@ -7,8 +7,9 @@
 #include <vector>
 #include <iostream>
 #include <stdexcept>
+#include <memory>
 
-#include "vk/Device.h"
+#include "vk/SwapChain.h"
 
 #ifdef DEBUG
 VkResult createDebugReportCallback(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugReportCallbackEXT *pCallback)
@@ -43,8 +44,9 @@ class VulkanApplication
 
 		std::vector<VkExtensionProperties> extensions;
 		std::vector<Device> devices;
-
-		Device *currentDevice = nullptr;
+		
+		std::unique_ptr<Device> currentDevice = nullptr;
+		SwapChain *currentSwapChain = nullptr;
 
 		#ifdef DEBUG
 		VkDeleter<VkDebugReportCallbackEXT> callback{instance, destroyDebugReportCallback};
@@ -58,9 +60,11 @@ class VulkanApplication
 		void initVulkan();
 		void createSurface();
 		void pickPhysicalDevice();
+		void createSwapChain();
 		void mainLoop();
 
 	public:
+		~VulkanApplication();
 		void run();
 
 		static constexpr const char *APPLICATION_NAME = "Vulkan Test";

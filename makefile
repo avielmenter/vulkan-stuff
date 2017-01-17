@@ -9,7 +9,7 @@ EXECUTABLE=vk
 OBJ_FOLDER=obj
 SRC_FOLDER=src
 
-OBJECTS=$(OBJ_FOLDER)/main.o $(OBJ_FOLDER)/VulkanApplication.o $(OBJ_FOLDER)/Device.o
+OBJECTS=$(OBJ_FOLDER)/main.o $(OBJ_FOLDER)/VulkanApplication.o $(OBJ_FOLDER)/Device.o $(OBJ_FOLDER)/SwapChain.o
 
 all: $(EXECUTABLE)
 
@@ -30,6 +30,9 @@ $(OBJ_FOLDER)/VulkanApplication.o: $(SRC_FOLDER)/VulkanApplication.cpp $(SRC_FOL
 
 $(OBJ_FOLDER)/Device.o: $(SRC_FOLDER)/vk/Device.cpp $(SRC_FOLDER)/vk/Device.h $(SRC_FOLDER)/vk/VkDeleter.h
 	$(CXX) $(CXXFLAGS) $(DEFS) -c $(SRC_FOLDER)/vk/Device.cpp -o $(OBJ_FOLDER)/Device.o
+
+$(OBJ_FOLDER)/SwapChain.o: $(SRC_FOLDER)/vk/SwapChain.cpp $(SRC_FOLDER)/vk/SwapChain.h $(SRC_FOLDER)/vk/Device.h $(SRC_FOLDER)/vk/VkDeleter.h
+	$(CXX) $(CXXFLAGS) $(DEFS) -c $(SRC_FOLDER)/vk/SwapChain.cpp -o $(OBJ_FOLDER)/SwapChain.o
 
 clean:
 	rm -rf $(EXECUTABLE) $(OBJECTS)

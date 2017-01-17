@@ -10,16 +10,18 @@
 class Device
 {
 	private:
+		friend class SwapChain;
+		
 		VkPhysicalDevice physicalDevice;
 		VkPhysicalDeviceProperties properties;
 		VkPhysicalDeviceFeatures features;
 
-		bool sameGraphicsAndPresentQueue = false;
+		int presentQueueFamily = -1;
+		int graphicsQueueFamily = -1;
 
 		VkQueue graphicsQueue;
 		VkQueue presentQueue;
 		VkDeleter<VkDevice> device {vkDestroyDevice};
-
 
 	public:
 		Device(const VkPhysicalDevice &setDevice);
@@ -40,6 +42,9 @@ class Device
 
 		VkQueue &getPresentQueue();
 		const VkQueue &getPresentQueue() const;
+
+		void setUpSwapChainQueueFamilies(VkSwapchainCreateInfoKHR &createInfo) const;		
+		bool hasSwapChainSupport(const VkSurfaceKHR &surface) const;
 
 		static constexpr int DEVICE_TYPE_SCORE = 1000;
 };
