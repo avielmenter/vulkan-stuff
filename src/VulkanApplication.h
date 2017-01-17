@@ -61,6 +61,8 @@ class VulkanApplication
 		void createSurface();
 		void pickPhysicalDevice();
 		void createSwapChain();
+		void createImageViews();
+
 		void mainLoop();
 
 	public:

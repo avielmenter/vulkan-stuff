@@ -179,6 +179,11 @@ void VulkanApplication::createSwapChain()
 	this->currentSwapChain->createSwapChain(1920, 1080);
 }
 
+void VulkanApplication::createImageViews()
+{
+	this->currentSwapChain->createImageViews();
+}
+
 void VulkanApplication::run()
 {
 	this->initWindow();
